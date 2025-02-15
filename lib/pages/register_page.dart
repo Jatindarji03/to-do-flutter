@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo/routes/route.dart';
 import 'package:todo/widgets/edit_text.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -141,7 +142,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            Navigator.pushReplacementNamed(
+                                context, MyRoutes.loginRoute);
+                          },
                           child: const Text(
                             "Already have an account? Login",
                             style: TextStyle(

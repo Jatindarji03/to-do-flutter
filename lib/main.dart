@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:todo/pages/login_page.dart';
 import 'package:todo/pages/register_page.dart';
 import 'package:todo/routes/route.dart';
 
@@ -11,12 +12,13 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
+    return MaterialApp(
       initialRoute: '/',
       debugShowCheckedModeBanner: false,
       routes: {
-        '/':(context) => RegisterPage(),
-        MyRoutes.registerRoute:(context) => RegisterPage()
+        '/': (context) => LoginPage(),
+        MyRoutes.registerRoute: (context) => RegisterPage(),
+        MyRoutes.loginRoute: (context) => LoginPage(),
       },
     );
   }
