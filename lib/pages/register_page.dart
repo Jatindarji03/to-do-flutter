@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/routes/route.dart';
 import 'package:todo/widgets/edit_text.dart';
@@ -10,11 +11,29 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
+  final _auth = FirebaseAuth.instance;
+  final _fromKey = GlobalKey<FormState>();
   final TextEditingController usernameController = TextEditingController();
 
   final TextEditingController emailController = TextEditingController();
 
   final TextEditingController passwordController = TextEditingController();
+
+  Future<void> registerUser() async {
+    try {
+      await _auth.createUserWithEmailAndPassword(
+          email: emailController.text.trim(),
+          password: passwordController.text.trim());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration successful!')),
+      );
+    } catch (e) {
+      print(e);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Registration Failed!')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +86,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Form(
+                  key: _fromKey,
                   child: Column(
                     children: [
                       MyEditText(
@@ -86,7 +106,11 @@ class _RegisterPageState extends State<RegisterPage> {
                         margin:
                             const EdgeInsets.only(top: 20), // Optional spacing
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            if (_fromKey.currentState!.validate()) {
+                              registerUser();
+                            }
+                          },
                           style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all(
                                 Colors.blueAccent[200]),
