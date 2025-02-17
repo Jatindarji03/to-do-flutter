@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:todo/pages/home_page.dart';
 import 'package:todo/pages/login_page.dart';
 import 'package:todo/pages/register_page.dart';
 import 'package:todo/routes/route.dart';
@@ -7,7 +8,7 @@ import 'package:todo/routes/route.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(const MainApp());
+  runApp( MainApp());
 }
 
 class MainApp extends StatelessWidget {
@@ -19,9 +20,10 @@ class MainApp extends StatelessWidget {
       initialRoute: '/',
       debugShowCheckedModeBanner: false,
       routes: {
-        '/': (context) => LoginPage(),
+        '/': (context) => HomePage(),
         MyRoutes.registerRoute: (context) => RegisterPage(),
         MyRoutes.loginRoute: (context) => LoginPage(),
+        MyRoutes.homeRoute: (context) => HomePage(),
       },
     );
   }

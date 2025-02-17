@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:todo/routes/route.dart';
 import 'package:todo/widgets/animated.dart';
 import 'package:todo/widgets/edit_text.dart';
@@ -17,6 +18,25 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  Future<User?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return null;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+      return userCredential.user;
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
   Future<void> loginUser() async {
     try {
       await _auth.signInWithEmailAndPassword(
@@ -24,6 +44,7 @@ class _LoginPageState extends State<LoginPage> {
           password: passwordController.text.trim());
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Login successful!')));
+      Navigator.pushReplacementNamed(context, MyRoutes.homeRoute);
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text('Login Failed!')));
@@ -114,7 +135,17 @@ class _LoginPageState extends State<LoginPage> {
                       margin:
                           const EdgeInsets.only(top: 20), // Optional spacing
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          signInWithGoogle().then((value) {
+                            if (value != null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Login successful!')));
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Login Failed!')));
+                            }
+                          });
+                        },
                         style: ButtonStyle(
                           backgroundColor:
                               MaterialStateProperty.all(Colors.blueAccent[200]),

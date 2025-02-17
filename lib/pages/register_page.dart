@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:todo/routes/route.dart';
+import 'package:todo/widgets/animated.dart';
 import 'package:todo/widgets/edit_text.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -19,6 +21,25 @@ class _RegisterPageState extends State<RegisterPage> {
 
   final TextEditingController passwordController = TextEditingController();
 
+  Future<User?> signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) return null;
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+      return userCredential.user;
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
   Future<void> registerUser() async {
     try {
       await _auth.createUserWithEmailAndPassword(
@@ -27,6 +48,7 @@ class _RegisterPageState extends State<RegisterPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Registration successful!')),
       );
+      Navigator.pushReplacementNamed(context, MyRoutes.homeRoute);
     } catch (e) {
       print(e);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -44,17 +66,7 @@ class _RegisterPageState extends State<RegisterPage> {
             children: [
               Stack(
                 children: [
-                  Container(
-                    width: double.infinity,
-                    height: 180,
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent[200],
-                      borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(90),
-                        bottomRight: Radius.circular(90),
-                      ),
-                    ),
-                  ),
+                  AnimatedGradientBackground(),
                   const Positioned.fill(
                     child: Center(
                       child: Text(
@@ -136,7 +148,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         margin:
                             const EdgeInsets.only(top: 20), // Optional spacing
                         child: ElevatedButton(
-                          onPressed: () {},
+                          onPressed: () async {
+                            User? user = await signInWithGoogle();
+                          },
                           style: ButtonStyle(
                             backgroundColor: MaterialStateProperty.all(
                                 Colors.blueAccent[200]),
