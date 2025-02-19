@@ -46,7 +46,7 @@ class _AnimatedGradientBackgroundState extends State<AnimatedGradientBackground>
             gradient: LinearGradient(
               begin: _alignmentAnimation.value,
               end: Alignment.bottomLeft,
-              colors: [
+              colors: const [
                 Color.fromARGB(255, 44, 63, 230),
                 Color.fromARGB(230, 3, 186, 247),
               ],

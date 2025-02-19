@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/models/todo_model.dart';
+import 'package:todo/widgets/custom_dialog.dart';
 import 'package:todo/widgets/list_item.dart';
 
 class HomePage extends StatefulWidget {
@@ -19,7 +20,7 @@ class _HomePageState extends State<HomePage> {
   final DatabaseReference _databaseReference =
       FirebaseDatabase.instance.reference().child("Todo");
 
-  Future<void> getData() async {
+  void getData() {
     _databaseReference.onValue.listen((event) {
       DataSnapshot snapshot = event.snapshot;
       if (snapshot.value != null) {
@@ -36,7 +37,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> deleteTask(String taskId) async {
+  void deleteTask(String taskId) {
     _databaseReference.child(taskId).remove().then((_) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text("Task Deleted")));
@@ -46,7 +47,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> addTask(TodoModel item) async {
+  void addTask(TodoModel item) {
     DatabaseReference newTaskRef =
         _databaseReference.push(); // Generate a unique key
     String taskKey = newTaskRef.key!; // Get the key
@@ -65,8 +66,7 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> updateTask(
-      String taskId, Map<String, dynamic> updateData) async {
+  void updateTask(String taskId, Map<String, dynamic> updateData) {
     _databaseReference.child(taskId).update(updateData).then((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Task Updated")),
@@ -76,66 +76,6 @@ class _HomePageState extends State<HomePage> {
         SnackBar(content: Text("Failed to add task: $onError")),
       );
     });
-  }
-
-  void _updateTaskDialog(BuildContext context, TodoModel todo) {
-    TextEditingController _taskController =
-        TextEditingController(text: todo.task);
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text(
-              "Update Task",
-              textAlign: TextAlign.center,
-            ),
-            content: TextField(
-              controller: _taskController,
-              decoration: const InputDecoration(hintText: "Enter Task"),
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    updateTask(
-                        todo.taskId, {"task": _taskController.text.trim()});
-                    Navigator.pop(context);
-                  },
-                  child: const Text("Update"))
-            ],
-          );
-        });
-  }
-
-  void _addTaskDialog(BuildContext context) {
-    TextEditingController _taskController = TextEditingController();
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text(
-              "Add Task",
-              textAlign: TextAlign.center,
-            ),
-            content: TextField(
-              controller: _taskController,
-              decoration: const InputDecoration(
-                hintText: "Enter your task",
-              ),
-            ),
-            actions: [
-              TextButton(
-                  onPressed: () {
-                    TodoModel item = TodoModel(
-                        task: _taskController.text,
-                        userId: _user!.uid,
-                        taskId: "");
-                    addTask(item);
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text("Add"))
-            ],
-          );
-        });
   }
 
   @override
@@ -150,7 +90,16 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _addTaskDialog(context);
+          //  _addTaskDialog(context);
+          showDialog(
+              context: context,
+              builder: (context) {
+                return CustomDialog(onSubmit: (task) {
+                  TodoModel todo =
+                      TodoModel(task: task, userId: _user!.uid, taskId: "");
+                  addTask(todo);
+                });
+              });
         },
         backgroundColor: Colors.blueAccent[200],
         child: const Icon(Icons.add, color: Colors.black),
@@ -198,7 +147,17 @@ class _HomePageState extends State<HomePage> {
                     child: Item(
                         todo: todoList[index],
                         onTap: (TodoModel todo) {
-                          _updateTaskDialog(context, todo);
+                          //  _updateTaskDialog(context, todo);
+                          showDialog(
+                              context: context,
+                              builder: (context) {
+                                return CustomDialog(
+                                    todo: todo,
+                                    onSubmit: (newTask) {
+                                      updateTask(
+                                          todo.taskId, {"task": newTask});
+                                    });
+                              });
                         }),
                   );
                 })),
