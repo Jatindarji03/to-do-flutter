@@ -8,7 +8,7 @@ import 'package:todo/routes/route.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp( MainApp());
+  runApp(MainApp());
 }
 
 class MainApp extends StatelessWidget {
