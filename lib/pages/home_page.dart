@@ -65,7 +65,48 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  void _addTaskDialogue(BuildContext context) {
+  Future<void> updateTask(
+      String taskId, Map<String, dynamic> updateData) async {
+    _databaseReference.child(taskId).update(updateData).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Task Updated")),
+      );
+    }).catchError((onError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to add task: $onError")),
+      );
+    });
+  }
+
+  void _updateTaskDialog(BuildContext context, TodoModel todo) {
+    TextEditingController _taskController =
+        TextEditingController(text: todo.task);
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text(
+              "Update Task",
+              textAlign: TextAlign.center,
+            ),
+            content: TextField(
+              controller: _taskController,
+              decoration: const InputDecoration(hintText: "Enter Task"),
+            ),
+            actions: [
+              TextButton(
+                  onPressed: () {
+                    updateTask(
+                        todo.taskId, {"task": _taskController.text.trim()});
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Update"))
+            ],
+          );
+        });
+  }
+
+  void _addTaskDialog(BuildContext context) {
     TextEditingController _taskController = TextEditingController();
     showDialog(
         context: context,
@@ -109,7 +150,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          _addTaskDialogue(context);
+          _addTaskDialog(context);
         },
         backgroundColor: Colors.blueAccent[200],
         child: const Icon(Icons.add, color: Colors.black),
@@ -133,28 +174,33 @@ class _HomePageState extends State<HomePage> {
                 itemCount: todoList.length,
                 itemBuilder: ((context, index) {
                   return Dismissible(
-                      background: Container(
-                        margin:
-                            const EdgeInsets.only(top: 10, right: 10, left: 10),
-                        padding: const EdgeInsets.only(right: 20),
-                        decoration: BoxDecoration(
-                            color: Colors.red[400],
-                            shape: BoxShape.rectangle,
-                            borderRadius: BorderRadius.circular(10)),
-                        alignment: Alignment.centerRight,
-                        child: const Icon(
-                          Icons.delete,
-                          color: Colors.white,
-                        ),
+                    background: Container(
+                      margin:
+                          const EdgeInsets.only(top: 10, right: 10, left: 10),
+                      padding: const EdgeInsets.only(right: 20),
+                      decoration: BoxDecoration(
+                          color: Colors.red[400],
+                          shape: BoxShape.rectangle,
+                          borderRadius: BorderRadius.circular(10)),
+                      alignment: Alignment.centerRight,
+                      child: const Icon(
+                        Icons.delete,
+                        color: Colors.white,
                       ),
-                      onDismissed: (directation) {
-                        setState(() {
-                          deleteTask(todoList[index].taskId);
-                          todoList.removeAt(index);
-                        });
-                      },
-                      key: Key(todoList[index].task),
-                      child: Item(todo: todoList[index]));
+                    ),
+                    onDismissed: (directation) {
+                      setState(() {
+                        deleteTask(todoList[index].taskId);
+                        todoList.removeAt(index);
+                      });
+                    },
+                    key: Key(todoList[index].task),
+                    child: Item(
+                        todo: todoList[index],
+                        onTap: (TodoModel todo) {
+                          _updateTaskDialog(context, todo);
+                        }),
+                  );
                 })),
       ),
     );
